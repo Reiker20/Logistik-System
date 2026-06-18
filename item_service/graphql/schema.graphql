@@ -1,0 +1,41 @@
+type Query {
+    daftarBarang: [Barang!]! @all(model: "App\\Models\\Barang")
+    cariBarang(id: ID! @eq): Barang @find(model: "App\\Models\\Barang")
+    barangBerdasarkanKategori(kategori: String! @eq): [Barang!]! @all(model: "App\\Models\\Barang")
+}
+
+type Mutation {
+    tambahBarang(input: InputTambahBarang! @spread): Barang! @create(model: "App\\Models\\Barang")
+    perbaruiBarang(id: ID!, input: InputPerbaruiBarang! @spread): Barang! @update(model: "App\\Models\\Barang")
+    hapusBarang(id: ID! @eq): Barang @delete(model: "App\\Models\\Barang")
+}
+
+type Barang {
+    id: ID!
+    nama_barang: String!
+    kategori: String!
+    jumlah_tersedia: Int!
+    satuan: String!
+    lokasi_penyimpanan: String
+    deskripsi: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input InputTambahBarang {
+    nama_barang: String!
+    kategori: String!
+    jumlah_tersedia: Int!
+    satuan: String! = "unit"
+    lokasi_penyimpanan: String
+    deskripsi: String
+}
+
+input InputPerbaruiBarang {
+    nama_barang: String
+    kategori: String
+    jumlah_tersedia: Int
+    satuan: String
+    lokasi_penyimpanan: String
+    deskripsi: String
+}
