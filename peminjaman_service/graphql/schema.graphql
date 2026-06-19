@@ -1,0 +1,41 @@
+type Query {
+    daftarPeminjaman: [Peminjaman!]! @all(model: "App\\Models\\Peminjaman")
+    cariPeminjaman(id: ID! @eq): Peminjaman @find(model: "App\\Models\\Peminjaman")
+    peminjamanPengguna(id_pengguna: Int! @eq): [Peminjaman!]! @all(model: "App\\Models\\Peminjaman")
+}
+
+type Mutation {
+    buatPeminjaman(input: InputBuatPeminjaman! @spread): Peminjaman! @create(model: "App\\Models\\Peminjaman")
+    perbaruiPeminjaman(id: ID!, input: InputPerbaruiPeminjaman! @spread): Peminjaman! @update(model: "App\\Models\\Peminjaman")
+    hapusPeminjaman(id: ID! @eq): Peminjaman @delete(model: "App\\Models\\Peminjaman")
+}
+
+type Peminjaman {
+    id: ID!
+    id_pengguna: Int!
+    id_barang: Int!
+    jumlah_pinjam: Int!
+    tanggal_pinjam: Date
+    tanggal_kembali: Date
+    tanggal_dikembalikan: Date
+    status_transaksi: String!
+    catatan: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input InputBuatPeminjaman {
+    id_pengguna: Int!
+    id_barang: Int!
+    jumlah_pinjam: Int!
+    tanggal_pinjam: Date!
+    tanggal_kembali: Date!
+    catatan: String
+}
+
+input InputPerbaruiPeminjaman {
+    jumlah_pinjam: Int
+    tanggal_kembali: Date
+    status_transaksi: String
+    catatan: String
+}
