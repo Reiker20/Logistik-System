@@ -1,0 +1,70 @@
+{
+  "version": 3,
+  "sources": [
+    {
+      "name": "db_user",
+      "kind": "postgres",
+      "tables": [
+        {
+          "table": {"schema": "public", "name": "pengguna"},
+          "select_permissions": [{"role": "public", "permission": {"columns": "*", "filter": {}}}],
+          "insert_permissions": [{"role": "public", "permission": {"check": {}, "columns": "*"}}],
+          "update_permissions": [{"role": "public", "permission": {"columns": "*", "filter": {}}}],
+          "delete_permissions": [{"role": "public", "permission": {"filter": {}}}]
+        }
+      ],
+      "configuration": {
+        "connection_info": {
+          "database_url": "postgres://user_admin:rahasia123@db_user:5432/db_user"
+        }
+      }
+    },
+    {
+      "name": "db_item",
+      "kind": "postgres",
+      "tables": [
+        {
+          "table": {"schema": "public", "name": "barang"},
+          "select_permissions": [{"role": "public", "permission": {"columns": "*", "filter": {}}}],
+          "insert_permissions": [{"role": "public", "permission": {"check": {}, "columns": "*"}}]
+        }
+      ],
+      "configuration": {
+        "connection_info": {
+          "database_url": "postgres://item_admin:rahasia123@db_item:5432/db_item"
+        }
+      }
+    },
+    {
+      "name": "db_peminjaman",
+      "kind": "postgres",
+      "tables": [
+        {
+          "table": {"schema": "public", "name": "peminjaman"},
+          "select_permissions": [{"role": "public", "permission": {"columns": "*", "filter": {}}}],
+          "insert_permissions": [{"role": "public", "permission": {"check": {}, "columns": "*"}}]
+        }
+      ],
+      "configuration": {
+        "connection_info": {
+          "database_url": "postgres://peminjaman_admin:rahasia123@db_peminjaman:5432/db_peminjaman"
+        }
+      }
+    },
+    {
+      "name": "db_notifikasi",
+      "kind": "postgres",
+      "tables": [
+        {
+          "table": {"schema": "public", "name": "notifikasi"},
+          "select_permissions": [{"role": "public", "permission": {"columns": "*", "filter": {}}}]
+        }
+      ],
+      "configuration": {
+        "connection_info": {
+          "database_url": "postgres://notifikasi_admin:rahasia123@db_notifikasi:5432/db_notifikasi"
+        }
+      }
+    }
+  ]
+}
