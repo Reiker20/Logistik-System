@@ -1,0 +1,196 @@
+services:
+  db_user:
+    image: postgres:15-alpine
+    container_name: db_user
+    environment:
+      POSTGRES_DB: db_user
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: rahasia123
+    ports:
+      - "5431:5432"
+    volumes:
+      - data_db_user:/var/lib/postgresql/data
+    networks:
+      - jaringan_logistik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_admin -d db_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db_item:
+    image: postgres:15-alpine
+    container_name: db_item
+    environment:
+      POSTGRES_DB: db_item
+      POSTGRES_USER: item_admin
+      POSTGRES_PASSWORD: rahasia123
+    ports:
+      - "5432:5432"
+    volumes:
+      - data_db_item:/var/lib/postgresql/data
+    networks:
+      - jaringan_logistik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U item_admin -d db_item"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db_peminjaman:
+    image: postgres:15-alpine
+    container_name: db_peminjaman
+    environment:
+      POSTGRES_DB: db_peminjaman
+      POSTGRES_USER: peminjaman_admin
+      POSTGRES_PASSWORD: rahasia123
+    ports:
+      - "5433:5432"
+    volumes:
+      - data_db_peminjaman:/var/lib/postgresql/data
+    networks:
+      - jaringan_logistik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U peminjaman_admin -d db_peminjaman"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db_notifikasi:
+    image: postgres:15-alpine
+    container_name: db_notifikasi
+    environment:
+      POSTGRES_DB: db_notifikasi
+      POSTGRES_USER: notifikasi_admin
+      POSTGRES_PASSWORD: rahasia123
+    ports:
+      - "5434:5432"
+    volumes:
+      - data_db_notifikasi:/var/lib/postgresql/data
+    networks:
+      - jaringan_logistik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notifikasi_admin -d db_notifikasi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_logistik
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: rahasia123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - jaringan_logistik
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  user_service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    container_name: user_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      db_user:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+  item_service:
+    build:
+      context: ./item_service
+      dockerfile: Dockerfile
+    container_name: item_service
+    ports:
+      - "8002:8000"
+    depends_on:
+      db_item:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+  peminjaman_service:
+    build:
+      context: ./peminjaman_service
+      dockerfile: Dockerfile
+    container_name: peminjaman_service
+    ports:
+      - "8003:8000"
+    depends_on:
+      db_peminjaman:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+  notifikasi_service:
+    build:
+      context: ./notifikasi_service
+      dockerfile: Dockerfile
+    container_name: notifikasi_service
+    ports:
+      - "8004:8000"
+    depends_on:
+      db_notifikasi:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+  notifikasi_worker:
+    build:
+      context: ./notifikasi_service
+      dockerfile: Dockerfile
+    container_name: notifikasi_worker
+    entrypoint: ["sh", "./worker-entrypoint.sh"]
+    restart: unless-stopped
+    depends_on:
+      db_notifikasi:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+  hasura:
+    image: hasura/graphql-engine:v2.36.0
+    container_name: hasura_logistik
+    ports:
+      - "8080:8080"
+    environment:
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://user_admin:rahasia123@db_user:5432/db_user
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ADMIN_SECRET: rahasiahasura
+    depends_on:
+      db_user:
+        condition: service_healthy
+      db_item:
+        condition: service_healthy
+      db_peminjaman:
+        condition: service_healthy
+      db_notifikasi:
+        condition: service_healthy
+    networks:
+      - jaringan_logistik
+
+volumes:
+  data_db_user:
+  data_db_item:
+  data_db_peminjaman:
+  data_db_notifikasi:
+
+networks:
+  jaringan_logistik:
+    driver: bridge

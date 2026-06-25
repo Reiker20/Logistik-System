@@ -1,0 +1,31 @@
+type Query {
+    daftarNotifikasi: [Notifikasi!]! @all(model: "App\\Models\\Notifikasi")
+    cariNotifikasi(id: ID! @eq): Notifikasi @find(model: "App\\Models\\Notifikasi")
+    notifikasiPengguna(id_pengguna: Int! @eq): [Notifikasi!]! @all(model: "App\\Models\\Notifikasi")
+}
+
+type Mutation {
+    tambahNotifikasi(input: InputTambahNotifikasi! @spread): Notifikasi! @create(model: "App\\Models\\Notifikasi")
+    tandaiBacaNotifikasi(id: ID!, status_baca: Boolean! = true): Notifikasi @update(model: "App\\Models\\Notifikasi")
+    hapusNotifikasi(id: ID! @eq): Notifikasi @delete(model: "App\\Models\\Notifikasi")
+}
+
+type Notifikasi {
+    id: ID!
+    id_pengguna: Int!
+    id_peminjaman: Int
+    judul: String!
+    isi_pesan: String!
+    jenis_notifikasi: String!
+    status_baca: Boolean!
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input InputTambahNotifikasi {
+    id_pengguna: Int!
+    id_peminjaman: Int
+    judul: String!
+    isi_pesan: String!
+    jenis_notifikasi: String! = "umum"
+}
