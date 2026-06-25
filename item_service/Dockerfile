@@ -1,21 +1,12 @@
-FROM php:8.2-cli-alpine
+FROM php:8.2-fpm
 
-RUN apk add --no-cache \
-    git \
-    curl \
-    zip \
-    unzip \
-    postgresql-dev \
-    libzip-dev \
-    $PHPIZE_DEPS \
-    linux-headers \
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libpq-dev libzip-dev \
     && docker-php-ext-install pdo pdo_pgsql zip sockets bcmath pcntl \
-    && apk del $PHPIZE_DEPS \
-    && rm -rf /var/cache/apk/*
+    && pecl install redis && docker-php-ext-enable redis \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-ENV PHP_CLI_SERVER_WORKERS=4
 
 WORKDIR /var/www/html
 
@@ -27,7 +18,7 @@ COPY . .
 
 RUN composer dump-autoload --optimize
 RUN php artisan key:generate --force 2>/dev/null || true
-RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod +x entrypoint.sh
