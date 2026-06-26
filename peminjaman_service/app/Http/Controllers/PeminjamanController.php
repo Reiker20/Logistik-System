@@ -73,6 +73,26 @@ class PeminjamanController extends Controller
 
         $peminjaman = Peminjaman::create($request->all());
 
+        // Kurangi stok barang di item_service
+        try {
+            $responStok = Http::patch(
+                env('ITEM_SERVICE_URL', 'http://item_service:8000') . '/api/barang/' . $peminjaman->id_barang . '/kurangi-stok',
+                ['jumlah' => $peminjaman->jumlah_pinjam]
+            );
+
+            if (!$responStok->successful()) {
+                // Stok tidak mencukupi atau barang tidak ditemukan, rollback peminjaman
+                $peminjaman->delete();
+                return response()->json([
+                    'status' => false,
+                    'pesan' => 'Gagal mengurangi stok: ' . ($responStok->json('pesan') ?? 'Stok tidak mencukupi'),
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            report($e);
+            // Jika item_service tidak bisa dijangkau, tetap lanjutkan
+        }
+
         try {
             $producer = new RabbitMQProducer();
             $producer->kirimPesan(
